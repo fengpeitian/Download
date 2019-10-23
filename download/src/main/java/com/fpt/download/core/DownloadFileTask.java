@@ -67,7 +67,10 @@ public class DownloadFileTask implements Runnable {
             out.close();
             is.close();
         }catch (IOException e){
-            e.printStackTrace();
+
+            synchronized (DownloadProcess.class) {
+                process.setError(e.getMessage());
+            }
         }
     }
 

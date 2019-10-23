@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.fpt.download.Task;
 import com.fpt.download.ISetting;
+import com.fpt.download.listener.OnDownloadListener;
 import com.fpt.download.listener.OnProgressListener;
 import com.fpt.download.listener.OnSpeedListener;
 
@@ -29,6 +30,7 @@ public class DownloadWrapper implements Runnable {
     private String fileName;
 
     private ISetting iSetting;
+    private OnDownloadListener downloadListener;
     private OnSpeedListener speedListener;
     private OnProgressListener progressListener;
 
@@ -36,6 +38,10 @@ public class DownloadWrapper implements Runnable {
         this.fileUrl = d.getFileUrl();
         this.fileName = d.getFileName();
         this.iSetting = d.getSetting();
+
+        if (d.getDownloadListener() != null){
+            this.downloadListener = d.getDownloadListener();
+        }
 
         if (d.getSpeedListener() != null) {
             this.speedListener = d.getSpeedListener();
@@ -48,15 +54,17 @@ public class DownloadWrapper implements Runnable {
 
     @Override
     public void run() {
-        startDownload(fileUrl,iSetting,fileName,speedListener,progressListener);
+        startDownload(fileUrl,iSetting,fileName,downloadListener,speedListener,progressListener);
     }
 
-    private void startDownload(String fileUrl, ISetting setting, @NonNull String fileName, OnSpeedListener l1, OnProgressListener l2){
+    private void startDownload(String fileUrl, ISetting setting, @NonNull String fileName, OnDownloadListener l0, OnSpeedListener l1, OnProgressListener l2){
         // 获取文件size
         long fileLength = getFileSize(fileUrl);
         if (fileLength == 0){
             // url资源出错
-            System.out.println("error in obtaining URL resources");
+            if (l0 != null) {
+                l0.onFailure("error in obtaining URL resources");
+            }
             return;
         }
         // 获取文件存储位置
@@ -66,6 +74,9 @@ public class DownloadWrapper implements Runnable {
             if (file.length() == fileLength) {
                 // 已下载过此文件
                 System.out.println("this file has been downloaded");
+                if (l0 != null) {
+                    l0.onSuccess();
+                }
                 return;
             }else {
                 // 不同文件,改名下载
@@ -74,7 +85,7 @@ public class DownloadWrapper implements Runnable {
         }
 
         // 创建下载过程
-        DownloadProcess process = new DownloadProcess(fileLength,l1,l2);
+        DownloadProcess process = new DownloadProcess(fileLength,l0,l1,l2);
         // 是否需要监听实时下载速度
         if (l1 != null) {
             new Thread(process).start();

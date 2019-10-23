@@ -1,5 +1,6 @@
 package com.fpt.download.core;
 
+import com.fpt.download.listener.OnDownloadListener;
 import com.fpt.download.listener.OnProgressListener;
 import com.fpt.download.listener.OnSpeedListener;
 
@@ -17,11 +18,13 @@ public class DownloadProcess implements Runnable {
     private long start = 0;
     private long sum;
 
+    private OnDownloadListener listener0;
     private OnSpeedListener listener1;
     private OnProgressListener listener2;
 
-    public DownloadProcess(long sum, OnSpeedListener l1, OnProgressListener l2) {
+    public DownloadProcess(long sum, OnDownloadListener l0, OnSpeedListener l1, OnProgressListener l2) {
         this.sum = sum;
+        this.listener0 = l0;
         this.listener1 = l1;
         this.listener2 = l2;
     }
@@ -39,6 +42,17 @@ public class DownloadProcess implements Runnable {
         }
     }
 
+    /**
+     * 防重复标记
+     */
+    private boolean flag = true;
+    public void setError(String message) {
+        if (listener0 != null && flag){
+            flag = false;
+            listener0.onFailure(message);
+        }
+    }
+
     private void calculateProgress() {
         if (sum > start){
             //当前完成进度
@@ -49,6 +63,9 @@ public class DownloadProcess implements Runnable {
         }else {
             if (listener2 != null){
                 listener2.onProgress(100);
+            }
+            if (listener0 != null){
+                listener0.onSuccess();
             }
         }
     }

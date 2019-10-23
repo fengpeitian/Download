@@ -4,6 +4,7 @@ import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.fpt.download.listener.OnDownloadListener;
 import com.fpt.download.listener.OnProgressListener;
 import com.fpt.download.listener.OnSpeedListener;
 
@@ -36,6 +37,10 @@ public class Task implements Parcelable {
      * 通用设置
      */
     private ISetting iSetting;
+    /**
+     * 下载监听
+     */
+    private OnDownloadListener downloadListener;
     /**
      * 下载实时速度的监听
      */
@@ -73,6 +78,14 @@ public class Task implements Parcelable {
 
     public void setOnProgressListener(OnProgressListener progressListener) {
         this.progressListener = progressListener;
+    }
+
+    public OnDownloadListener getDownloadListener() {
+        return downloadListener;
+    }
+
+    public void setOnDownloadListener(OnDownloadListener downloadListener) {
+        this.downloadListener = downloadListener;
     }
 
     public void setThreadCount(int threadCount) {
